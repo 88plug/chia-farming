@@ -8,7 +8,7 @@ do
     sleep 10
     echo "Last chance..."
     sleep 5
-    sudo mkfs.ext4 -L chia-"x"${count} -b 4096 $drive
+    sudo mkfs.ext4 -L chia-"x"${count} -T largefile $drive
     sudo tune2fs -m 0 $drive #0% reserve
     sudo hdparm -W 0 $drive #Disable write-cache
     sudo hdparm --readahead-sector 64 $drive
