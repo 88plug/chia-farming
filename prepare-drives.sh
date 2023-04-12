@@ -11,6 +11,8 @@ do
     sudo mkfs.ext4 -L chia-"x"${count} -b 4096 $drive
     sudo tune2fs -m 0 $drive #0% reserve
     sudo hdparm -W 0 $drive #Disable write-cache
+    sudo hdparm --readahead-sector 64 $drive
+#Optimize for Performance: Although a harvester doesn't perform many write operations, you can still optimize the drive for performance. One way to do this is to enable read-ahead caching using the "hdparm" command. For example, you can enable read-ahead caching with a block size of 64 sectors using the following command: sudo hdparm --readahead-sector 64 /dev/sdx. You should replace "sdx" with the device name of the drive that you want to optimize.
     sudo udisksctl power-off -b $drive #Power off to finalize hdparm commands.
 done
 
