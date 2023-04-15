@@ -1,0 +1,19 @@
+version: "3.6"
+services:
+  chia_harvester:
+    container_name: chia_harvester
+    restart: always
+    image: cryptoandcoffee/chia-node-cuda:1
+    ports:
+      - 8444:8444
+    environment:
+      - service=harvester
+      - farmer_address="IP OR DNS OF FARMER"
+      - farmer_port=8447
+      - ca=/ca
+      - keys=none
+      - TZ="America/Los_Angeles"
+      - recursive_plot_scan=true
+    volumes:
+      - /home/andrew/current_ca:/ca #The CA folder from your farmer
+      - /home/andrew/chia-drives/:/plots 
