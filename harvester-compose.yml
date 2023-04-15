@@ -1,3 +1,4 @@
+# Compatible with GPU plots made with Bladebit up-to C7 compression
 version: "3.6"
 services:
   chia_harvester:
