@@ -1,4 +1,5 @@
 # Fill in your CONTRACT and FARMERKEY to make plots with 512GB of Memory.
+# You can access the File Explorer at port 80 
 
 docker kill akash-chia ; docker rm akash-chia
 docker run -d -p 80:8080 \
