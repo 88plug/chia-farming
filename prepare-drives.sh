@@ -1,4 +1,8 @@
+#!/bin/bash
+
 #VERY DANGEROUS SCRIPT
+rm fstab-entries
+rm failing_drives.log
 
 count=0
 for drive in /dev/sdc1 /dev/sdd1 /dev/sde1 /dev/sdf1 /dev/sdg1 /dev/sdh1 /dev/sdi1 /dev/sdj1 /dev/sdk1 /dev/sdl1
