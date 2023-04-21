@@ -13,7 +13,7 @@ do
     wipefs --force --all $drive
     #####
     #HAIL MARY OPTION like bad superblock or protection layer2
-    #screen -dmS format sg_format --format --fmtpinfo=0 /dev/$drive
+    #screen -dmS format sg_format --format --fmtpinfo=0 $drive
     #####
     serial=$(smartctl -i $drive | grep -i "Serial Number" | awk -F ': +' '{print $2}')
     vendor=$(smartctl -i $drive | grep -i "Vendor" | awk '{print $2}')
@@ -22,7 +22,8 @@ do
     mkfs.ext4 -F -L chia-${serial: -4}-"x"${count} -T largefile -O ^has_journal $drive
     tune2fs -m 0 $drive #0% reserve
     hdparm -W 0 $drive #Disable write-cache
-    echo "LABEL=chia-${serial: -4}-x${count} /mnt/chia ext4 noatime,nodiratime,nofail,x-systemd.device-timeout=10 0 0" >> fstab-entries
+    uuid=$(blkid -s UUID -o value $drive)
+    echo "UUID=$uuid /mnt/chia-$count ext4 noatime,nodiratime,nofail,x-systemd.device-timeout=10 0 0" >> fstab-entries
     mount_point="/mnt/chia-${serial: -4}-x${count}"
     mkdir -p $mount_point
     if mount -t ext4 $drive $mount_point; then
