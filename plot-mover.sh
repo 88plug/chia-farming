@@ -5,16 +5,17 @@ source_dir="/home/user/fast-cache/final"
 
 # Set the list of farming drives you want to use
 farming_drives=(
-    "/run/media/user/chia-sabrent-x1"
-    "/run/media/user/chia-sabrent-x2"
-    "/run/media/user/chia-sabrent-x3"
-    "/run/media/user/chia-sabrent-x4"
-    "/run/media/user/chia-sabrent-x5"
-    "/run/media/user/chia-sabrent-x6"
-    "/run/media/user/chia-sabrent-x7"
-    "/run/media/user/chia-sabrent-x8"
-    "/run/media/user/chia-sabrent-x9"
-    "/run/media/user/chia-sabrent-x10"
+    "/home/user/chia-drives/chia-sabrent-x1"
+    "/home/user/chia-drives/chia-sabrent-x2"
+    "/home/user/chia-drives/chia-sabrent-x3"
+    "/home/user/chia-drives/chia-sabrent-x3"
+    "/home/user/chia-drives/chia-sabrent-x4"
+    "/home/user/chia-drives/chia-sabrent-x5"
+    "/home/user/chia-drives/chia-sabrent-x6"
+    "/home/user/chia-drives/chia-sabrent-x7"
+    "/home/user/chia-drives/chia-sabrent-x8"
+    "/home/user/chia-drives/chia-sabrent-x9"
+    "/home/user/chia-drives/chia-sabrent-x10"
 )
 
 # Initialize a variable to store the last farming drive used
@@ -32,12 +33,21 @@ function is_drive_available() {
     # Check if the farming drive is already being used for a transfer
     for pid in "${pids[@]}"
     do
-        if lsof -p "$pid" | grep "$drive" > /dev/null
+        if lsof -w -p "$pid" | grep "$drive" > /dev/null
         then
             return 1
         fi
     done
-    return 0
+
+    # Check if the farming drive has space available
+    if ! df -h "$drive" | awk '{print $5}' | tail -1 | grep -q "^100"; then
+        return 0
+    fi
+
+    # If the drive is full, remove it from the list
+    farming_drives=("${farming_drives[@]/$drive}")
+    echo "Drive $drive is full. Removing it from the list of available drives."
+    return 1
 }
 
 # Function to move a plot file to a farming drive
@@ -76,39 +86,39 @@ do
 
     # If no available drive was found, wait for a few seconds before checking again
     if [ "$drive" == "" ]; then
-        echo "All farming drives are currently in use. Waiting for a slot to become available..."
-        sleep 5
-        continue
-    fi
-
-    # Count the number of transfer processes running
-    transfer_count=${#pids[@]}
-
-    # If there are fewer than two transfer processes running, start a new transfer
-    if [ "$transfer_count" -lt 3 ]; then
-        # Use find to get a list of .plot files that haven't been moved yet
-        new_files=()
-        while IFS= read -r -d $'\0' file; do
-            if ! [[ "${moved_files[*]}" =~ $file ]]; then
-                new_files+=("$file")
-            fi
-        done < <(find "$source_dir" -name "*.plot" -type f -print0)
-
-        # If there are any new .plot files, move the first one to the farming drive
-        if [ ${#new_files[@]} -gt 0 ]; then
-            move_plot "$drive" "${new_files[0]}"
-        fi
-    fi
-
-    # Check the status of transfer processes
-    for i in "${!pids[@]}"
-    do
-        if ! ps -p "${pids[$i]}" > /dev/null
-        then
-            unset pids[$i]
-        fi
-    done
-
-    # Wait for a few seconds before checking again
+    echo "All farming drives are currently in use. Waiting for a slot to become available..."
     sleep 5
+    continue
+fi
+
+# Count the number of transfer processes running
+transfer_count=${#pids[@]}
+
+# If there are fewer than four transfer processes running, start a new transfer
+if [ "$transfer_count" -lt 4 ]; then
+    # Use find to get a list of .plot files that haven't been moved yet
+    new_files=()
+    while IFS= read -r -d $'\0' file; do
+        if ! [[ "${moved_files[*]}" =~ $file ]]; then
+            new_files+=("$file")
+        fi
+    done < <(find "$source_dir" -name "*.plot" -type f -print0)
+
+    # If there are any new .plot files, move the first one to the farming drive
+    if [ ${#new_files[@]} -gt 0 ]; then
+        move_plot "$drive" "${new_files[0]}"
+    fi
+fi
+
+# Check the status of transfer processes
+for i in "${!pids[@]}"
+do
+    if ! ps -p "${pids[$i]}" > /dev/null
+    then
+        unset pids[$i]
+    fi
 done
+
+# Wait for a few seconds before checking again
+sleep 5
+       
