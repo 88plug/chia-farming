@@ -113,7 +113,7 @@ do
     for file in "${new_files[@]}"
     do
         # Check if there are already $max_transfers active transfers
-        if [ "$(count_active_transfers)" -ge "$(max_transfers)" ]; then
+        if [ "$(count_active_transfers)" -ge $max_transfers ]; then
             echo "🌽 There are already $max_transfers active transfers. Waiting for a slot to become available..."
             sleep 10
             break
