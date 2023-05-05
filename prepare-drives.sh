@@ -22,9 +22,9 @@ do
     vendor=$(smartctl -i $drive | grep -i "Vendor" | awk '{print $2}')
     product=$(smartctl -i $drive | grep -i "Product" | awk '{print $2}')
     echo "----- Formatting : $vendor | $product | $serial -----"
-    parted -a optimal $drive --script mklabel gpt mkpart primary ext4 0% 100% name 1 chia-${serial: -4}-"x"${count}
+    parted -a optimal $drive --script mklabel gpt mkpart primary ext4 0% 100% name 1 chia-${serial: -4}-"x"${count} --align optimal
     part="$drive""1"
-    mkfs.ext4 -F -U $(uuidgen) -L chia-${serial: -4}-"x"${count} $part
+    mkfs.ext4 -F -U $(uuidgen) -L chia-${serial: -4}-"x"${count} -O ^has_journal,extent,dir_index $part
     tune2fs -m 0 $part #0% reserve
     hdparm -W 0 $part #Disable write-cache
     uuid=$(blkid -s UUID -o value $part)
